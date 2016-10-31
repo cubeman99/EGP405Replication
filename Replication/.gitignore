@@ -1,0 +1,11 @@
+
+
+*.sdf
+*.db
+*.opendb
+*.suo
+*.user
+
+.vs/
+[Dd]ebug
+[Rr]elease
