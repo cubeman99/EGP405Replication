@@ -18,28 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Archer.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="LinkingContext.h" />
-    <ClInclude Include="ObjectCreationRegistry.h" />
-    <ClInclude Include="TownHall.h" />
-    <ClInclude Include="Vector2i.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Archer.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="TownHall.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{35722594-3E3E-49E5-8E90-2B8F40E85965}</ProjectGuid>
+    <ProjectGuid>{6D9E23F8-E221-4EAD-AFA6-50F4CDE71207}</ProjectGuid>
     <RootNamespace>Replication</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>Common</ProjectName>
+    <ProjectName>Server</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -137,6 +124,14 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Server.vcxproj">
+      <Project>{35722594-3e3e-49e5-8e90-2b8f40e85965}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
