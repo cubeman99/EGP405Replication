@@ -7,5 +7,6 @@ build/*.suo
 build/*.user
 
 build/.vs/
-build/[Dd]ebug
-build/[Rr]elease
+build/Common
+build/Cleint
+build/Server
