@@ -8,5 +8,5 @@ build/*.user
 
 build/.vs/
 build/Common
-build/Cleint
+build/Client
 build/Server
