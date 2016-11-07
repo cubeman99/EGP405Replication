@@ -18,15 +18,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Archer.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="LinkingContext.h" />
+    <ClInclude Include="ObjectCreationRegistry.h" />
+    <ClInclude Include="ReplicationManager.h" />
+    <ClInclude Include="RPCManager.h" />
+    <ClInclude Include="TownHall.h" />
+    <ClInclude Include="Vector2i.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Archer.cpp" />
+    <ClCompile Include="LinkingContext.cpp" />
+    <ClCompile Include="ObjectCreationRegistry.cpp" />
+    <ClCompile Include="ReplicationManager.cpp" />
+    <ClCompile Include="RPCManager.cpp" />
+    <ClCompile Include="TownHall.cpp" />
+    <ClCompile Include="Vector2i.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6D9E23F8-E221-4EAD-AFA6-50F4CDE71207}</ProjectGuid>
+    <ProjectGuid>{35722594-3E3E-49E5-8E90-2B8F40E85965}</ProjectGuid>
     <RootNamespace>Replication</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>Server</ProjectName>
+    <ProjectName>Common</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -124,14 +143,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Server.vcxproj">
-      <Project>{35722594-3e3e-49e5-8e90-2b8f40e85965}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

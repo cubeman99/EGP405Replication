@@ -1,23 +1,25 @@
 #ifndef _GAME_OBJECT_H_
 #define _GAME_OBJECT_H_
 
+#include <RakNet/BitStream.h>
 #include <cstdint>
+#include <ostream>
+
+class LinkingContext;
 
 
 class GameObject
 {
 public:
-	GameObject();
+	GameObject() {}
 	virtual ~GameObject() {}
 
 	virtual uint32_t GetClassId() const = 0;
-
-	inline int32_t GetGameObjectId() const { return m_gameObjectId; }
-
-	inline void SetGameObjectId(int32_t gameObjectId) { m_gameObjectId = gameObjectId; }
+	virtual void Serialize(RakNet::BitStream& out, LinkingContext& linkingContext) = 0;
+	virtual void Deserialize(RakNet::BitStream& in, LinkingContext& linkingContext) = 0;
+	virtual void PrintStateInfo(std::ostream& out) = 0;
 
 private:
-	int32_t m_gameObjectId;
 };
 
 

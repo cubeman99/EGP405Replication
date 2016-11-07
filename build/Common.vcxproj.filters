@@ -13,10 +13,60 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Replication">
+      <UniqueIdentifier>{468f3d89-d875-4a0c-a80e-ad10ffb07bb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameObjects">
+      <UniqueIdentifier>{8f11339e-fa4f-44f5-a6ed-9012b162316d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClInclude Include="Vector2i.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkingContext.h">
+      <Filter>Source Files\Replication</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectCreationRegistry.h">
+      <Filter>Source Files\Replication</Filter>
+    </ClInclude>
+    <ClInclude Include="RPCManager.h">
+      <Filter>Source Files\Replication</Filter>
+    </ClInclude>
+    <ClInclude Include="Archer.h">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="TownHall.h">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplicationManager.h">
+      <Filter>Source Files\Replication</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Vector2i.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RPCManager.cpp">
+      <Filter>Source Files\Replication</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkingContext.cpp">
+      <Filter>Source Files\Replication</Filter>
+    </ClCompile>
+    <ClCompile Include="Archer.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="TownHall.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicationManager.cpp">
+      <Filter>Source Files\Replication</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectCreationRegistry.cpp">
+      <Filter>Source Files\Replication</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
