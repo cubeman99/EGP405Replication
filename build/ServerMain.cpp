@@ -4,8 +4,8 @@
 
 int main()
 {
-	Server server;
-	server.RunServer();
+	Server* server = Server::GetInstance();
+	server->RunServer();
 	system("pause");
 	return 0;
 }

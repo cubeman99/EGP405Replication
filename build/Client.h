@@ -24,11 +24,13 @@ public:
 	void RegisterRPCs(RPCManager* rpcManager);
 	void RegisterObjectCreation(ObjectCreationRegistry* registry);
 
-	void UnwrapPlaySound(RakNet::BitStream& inStream);
+	void SpawnObjectRPC(GameObject* obj);
 
 	void ProcessPacket(RakNet::Packet* packet);
 
 	void OnObjectCreation(GameObject* obj) override;
+
+	inline ReplicationManager* GetReplicationManager() { return &m_replicationManager; }
 
 private:
 	ReplicationManager m_replicationManager;

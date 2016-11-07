@@ -11,40 +11,6 @@ Client::Client()
 {
 	RegisterRPCs(m_replicationManager.GetRPCManager());
 	RegisterObjectCreation(m_replicationManager.GetObjectCreationRegistry());
-
-	/*
-	TownHall* hallHumans = new TownHall("Stormwind", TownHallType::HUMANS, Vector2i(21, 15), 100);
-	TownHall* hallOrcs   = new TownHall("Orgrimmar", TownHallType::ORCS, Vector2i(40, 23), 100);
-	TownHall* hallElves  = new TownHall("Darnassus", TownHallType::ELVES, Vector2i(40, 23), 100);
-	TownHall* hallUndead = new TownHall("Undercity", TownHallType::UNDEAD, Vector2i(21, 15), 100);
-
-	m_gameObjects.push_back(hallHumans);
-	m_gameObjects.push_back(hallOrcs);
-	m_gameObjects.push_back(hallElves);
-	m_gameObjects.push_back(hallUndead);
-
-	m_gameObjects.push_back(new Archer("Tyrande Whisperwind", hallElves, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Malfurian Stormrage", hallElves, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Varian Wrynn", hallHumans, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Thrall", hallOrcs, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Sylvanas Windrunner", hallUndead, Vector2i(38, 21), 30, Action::SHOOTING));
-
-	PrintState(std::cout);
-
-	BitStream bsOut;
-	SerializeState(bsOut);
-
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-		delete *it;
-	m_gameObjects.clear();
-	m_replicationManager.GetLinkingContext()->ClearGameObjects();
-
-	m_replicationManager.ProcessReplicationActions(bsOut, this);
-	//DeserializeState(bsOut);
-
-	std::cout << "\n------------------------------------\n" << std::endl;
-	PrintState(std::cout);
-	*/
 }
 
 Client::~Client()
@@ -118,13 +84,6 @@ void Client::PrintState(std::ostream& out)
 	}
 }
 
-void Client::UnwrapPlaySound(BitStream& inStream)
-{
-	std::cout << "Play Sound!\n";
-}
-
-
-
 void Client::ProcessPacket(Packet* packet)
 {
 	BitStream inStream(packet->data, packet->length, false);
@@ -174,3 +133,11 @@ void Client::RegisterObjectCreation(ObjectCreationRegistry* registry)
 	registry->RegisterCreationFunction<TownHall>();
 }
 
+void Client::SpawnObjectRPC(GameObject* obj)
+{
+	BitStream outStream;
+	outStream.Write<MessageID>(PacketType::REPLICATION_DATA);
+	outStream.Write<uint32_t('SPWN');
+	outStream.Write(obj->GetClassId()
+	outStream.Write<uint8_t>(ReplicationAction::INVALID);
+}

@@ -24,8 +24,6 @@ void ReplicationManager::SerializeEndOfReplicationActions(RakNet::BitStream& out
 void ReplicationManager::ProcessReplicationActions(RakNet::BitStream& inStream, ObjectCreationListener* listener)
 {
 	uint8_t replicationAction;
-	uint32_t networkId;
-	uint32_t classId;
 
 	while (true)
 	{
@@ -33,27 +31,7 @@ void ReplicationManager::ProcessReplicationActions(RakNet::BitStream& inStream, 
 
 		if (replicationAction == ReplicationAction::STATE)
 		{
-			// Read the network ID.
-			// A value of 0 signifies the end of the list of objects.
-			inStream.Read(networkId);
-			if (networkId == LinkingContext::NULL_NETWORK_ID)
-				break;
-
-			// Read the class ID.
-			inStream.Read(classId);
-
-			// Get or create the object.
-			GameObject* obj = m_linkingContext.GetGameObject(networkId);
-			if (obj == NULL)
-			{
-				obj = m_objectCreationRegistry.CreateGameObject(classId);
-				m_linkingContext.AddGameObject(obj, networkId);
-				if (listener != NULL)
-					listener->OnObjectCreation(obj);
-			}
-
-			// Read the object-specific data.
-			obj->Deserialize(inStream, m_linkingContext);
+			ProcessStateReplicationAction(inStream, listener);
 		}
 		else if (replicationAction == ReplicationAction::RPC)
 		{
@@ -69,3 +47,33 @@ void ReplicationManager::ProcessReplicationActions(RakNet::BitStream& inStream, 
 		}
 	}
 }
+
+void ReplicationManager::ProcessStateReplicationAction(RakNet::BitStream& inStream, ObjectCreationListener* listener)
+{
+	uint32_t networkId;
+	uint32_t classId;
+
+	// Read the network ID.
+	// A value of 0 signifies the end of the list of objects.
+	inStream.Read(networkId);
+	if (networkId == LinkingContext::NULL_NETWORK_ID)
+		return;
+
+	// Read the class ID.
+	inStream.Read(classId);
+
+	// Get or create the object.
+	GameObject* obj = m_linkingContext.GetGameObject(networkId);
+	if (obj == NULL)
+	{
+		obj = m_objectCreationRegistry.CreateGameObject(classId);
+		m_linkingContext.AddGameObject(obj, networkId);
+		if (listener != NULL)
+			listener->OnObjectCreation(obj);
+	}
+
+	// Read the object-specific data.
+	obj->Deserialize(inStream, m_linkingContext);
+}
+
+

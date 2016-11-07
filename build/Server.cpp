@@ -16,11 +16,11 @@ Server::Server()
 	// - 1 Human
 	// - 1 Undead
 	// - 2 Orc
-	TownHall* hallElves  = new TownHall("Darnassus", TownHallType::ELVES, Vector2i(40, 23), 100);
-	TownHall* hallHumans = new TownHall("Stormwind", TownHallType::HUMANS, Vector2i(21, 15), 100);
-	TownHall* hallUndead = new TownHall("Undercity", TownHallType::UNDEAD, Vector2i(21, 15), 100);
-	TownHall* hallOrcs1  = new TownHall("Orgrimmar", TownHallType::ORCS, Vector2i(40, 23), 100);
-	TownHall* hallOrcs2  = new TownHall("Razor Hill", TownHallType::ORCS, Vector2i(40, 23), 100);
+	TownHall* hallElves  = new TownHall("Darnassus", TownHallType::ELVES, Vector2i(5, 5), 100);
+	TownHall* hallHumans = new TownHall("Stormwind", TownHallType::HUMANS, Vector2i(85, 70), 100);
+	TownHall* hallUndead = new TownHall("Undercity", TownHallType::UNDEAD, Vector2i(87, 25), 100);
+	TownHall* hallOrcs1  = new TownHall("Orgrimmar", TownHallType::ORCS, Vector2i(31, 45), 100);
+	TownHall* hallOrcs2  = new TownHall("Razor Hill", TownHallType::ORCS, Vector2i(32, 50), 50);
 	m_gameObjects.push_back(hallElves);
 	m_gameObjects.push_back(hallHumans);
 	m_gameObjects.push_back(hallUndead);
@@ -32,13 +32,13 @@ Server::Server()
 	//  - 1 Human
 	//  - 1 Undead
 	//  - 3 Orcs
-	m_gameObjects.push_back(new Archer("Tyrande Whisperwind", hallElves, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Malfurian Stormrage", hallElves, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Varian Wrynn", hallHumans, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Sylvanas Windrunner", hallUndead, Vector2i(38, 21), 30, Action::SHOOTING));
-	m_gameObjects.push_back(new Archer("Thrall", hallOrcs1, Vector2i(38, 21), 30, Action::WALKING));
-	m_gameObjects.push_back(new Archer("Vol'jin", hallOrcs1, Vector2i(38, 21), 30, Action::WALKING));
-	m_gameObjects.push_back(new Archer("Orgnil Soulscar", hallOrcs2, Vector2i(38, 21), 30, Action::SHOOTING));
+	m_gameObjects.push_back(new Archer("Tyrande Whisperwind", hallElves, Vector2i(4, 5), 100, Action::IDLE));
+	m_gameObjects.push_back(new Archer("Malfurian Stormrage", hallElves, Vector2i(20, 14), 100, Action::WALKING));
+	m_gameObjects.push_back(new Archer("Varian Wrynn", hallHumans, Vector2i(87, 70), 100, Action::IDLE));
+	m_gameObjects.push_back(new Archer("Sylvanas Windrunner", hallUndead, Vector2i(90, 22), 100, Action::SHOOTING));
+	m_gameObjects.push_back(new Archer("Thrall", hallOrcs1, Vector2i(30, 44), 100, Action::WALKING));
+	m_gameObjects.push_back(new Archer("Vol'jin", hallOrcs1, Vector2i(29, 40), 100, Action::IDLE));
+	m_gameObjects.push_back(new Archer("Orgnil Soulscar", hallOrcs2, Vector2i(31, 51), 100, Action::SHOOTING));
 
 	//PrintState(std::cout);
 }
@@ -104,13 +104,6 @@ void Server::PrintState(std::ostream& out)
 	}
 }
 
-void Server::UnwrapPlaySound(BitStream& inStream)
-{
-	std::cout << "Play Sound!\n";
-}
-
-
-
 void Server::ProcessPacket(Packet* packet)
 {
 	BitStream inStream(packet->data, packet->length, false);
@@ -142,12 +135,37 @@ void Server::ProcessPacket(Packet* packet)
 	};
 }
 
+
+void Server::UnwrapSpawnUnit(RakNet::BitStream& inStream)
+{
+	Server* server = Server::GetInstance();
+
+	m_replicationManager.ProcessStateReplicationAction(inStream, server);
+
+	// Read the class ID.
+	inStream.Read(classId);
+
+	// Create the object.
+	GameObject* obj = m_objectCreationRegistry.CreateGameObject(classId);
+	server->m_replicationManager->GetLinkingContext()->AddGameObject(obj, networkId);
+	server->m_gameObjects.push_back(obj);
+
+	// Read the object-specific data.
+	obj->Deserialize(inStream, m_linkingContext);
+}
+
 void Server::RegisterRPCs(RPCManager* rpcManager)
 {
-	//rpcManager->RegisterUnwrapFunction('PSND', &(this->UnwrapPlaySound));
+	rpcManager->RegisterUnwrapFunction('SPWN', Server::UnwrapSpawnUnit);
 
 	//BitStream bsOut;
 	//bsOut.Write<uint32_t>('PSND');
 	//rpcManager->ProcessRPC(bsOut);
 }
 
+
+
+void Server::OnObjectCreation(GameObject* obj)
+{
+	m_gameObjects.push_back(obj);
+}

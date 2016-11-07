@@ -12,11 +12,14 @@
 #define SERVER_PORT 60000
 #define MAX_CLIENTS 10
 
-class Server
+class Server : public ObjectCreationListener
 {
 public:
-	Server();
-	~Server();
+	static Server* GetInstance()
+	{
+		static Server instance;
+		return &instance;
+	}
 
 	void SerializeState(RakNet::BitStream& outStream);
 	void PrintState(std::ostream& out);
@@ -25,11 +28,18 @@ public:
 
 	void RegisterRPCs(RPCManager* rpcManager);
 
-	void UnwrapPlaySound(RakNet::BitStream& inStream);
-
 	void ProcessPacket(RakNet::Packet* packet);
 
+	inline ReplicationManager* GetReplicationManager() { return &m_replicationManager; }
+
+	static void UnwrapSpawnUnit(RakNet::BitStream& inStream);
+
+	void OnObjectCreation(GameObject* obj) override;
+
 private:
+	Server();
+	~Server();
+
 	ReplicationManager m_replicationManager;
 	std::vector<GameObject*> m_gameObjects;
 	RakNet::RakPeerInterface* m_peerInterface;

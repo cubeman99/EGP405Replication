@@ -62,6 +62,6 @@ void Archer::PrintStateInfo(std::ostream& out)
 		" * name           = " << m_name << std::endl <<
 		" * town hall      = " << m_townHall->GetName() << std::endl <<
 		" * current action = " << m_currentAction << std::endl <<
-		" * health         = " << m_health << std::endl <<
+		" * health         = " << m_health << "%" << std::endl <<
 		" * location       = " << m_location << std::endl;
 }

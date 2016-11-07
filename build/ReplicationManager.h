@@ -48,6 +48,7 @@ public:
 	void SerializeStateReplicationAction(RakNet::BitStream& outStream, GameObject* gameObject);
 	void SerializeEndOfReplicationActions(RakNet::BitStream& outStream);
 	void ProcessReplicationActions(RakNet::BitStream& inStream, ObjectCreationListener* listener);
+	void ProcessStateReplicationAction(RakNet::BitStream& inStream, ObjectCreationListener* listener);
 
 private:
 	LinkingContext m_linkingContext;

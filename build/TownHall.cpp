@@ -54,6 +54,6 @@ void TownHall::PrintStateInfo(std::ostream& out)
 	out << "Town Hall" << std::endl <<
 		" * name           = " << m_name << std::endl <<
 		" * type           = " << m_type << std::endl <<
-		" * health         = " << m_health << std::endl <<
+		" * health         = " << m_health << "%" << std::endl <<
 		" * location       = " << m_location << std::endl;
 }
