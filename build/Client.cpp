@@ -3,13 +3,13 @@
 #include "Archer.h"
 #include "ObjectCreationRegistry.h"
 #include "Server.h"
+#include <fstream>
 
 using namespace RakNet;
 
 
 Client::Client()
 {
-	RegisterRPCs(m_replicationManager.GetRPCManager());
 	RegisterObjectCreation(m_replicationManager.GetObjectCreationRegistry());
 }
 
@@ -45,7 +45,8 @@ void Client::RunClient()
 	SystemAddress serverAddress;
 	Packet* packet;
 
-	while (true)
+	// Receive packets for 1 second.
+	for (int i = 0; i < 10; i++)
 	{
 		for (packet = m_peerInterface->Receive(); packet != NULL;
 			m_peerInterface->DeallocatePacket(packet),
@@ -56,32 +57,25 @@ void Client::RunClient()
 
 		Sleep(100);
 	}
+
+	// Disconnect from the server.
+	printf("Disconnecting...\n\n");
+	m_peerInterface->CloseConnection(m_serverAddress, true, 0, IMMEDIATE_PRIORITY);
+	Sleep(100);
+
+	printf("Resulting state of the world:\n\n");
+	PrintState(std::cout);
+	printf("\n");
+	OutputStateToFile();
+
+	printf("\n");
 }
 
-void Client::SerializeState(BitStream& outStream)
-{
-	// Serialize all object states.
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		m_replicationManager.SerializeStateReplicationAction(outStream, *it);
-	}
 
-	m_replicationManager.SerializeEndOfReplicationActions(outStream);
-}
-
-void Client::DeserializeState(BitStream& inStream)
+void Client::RegisterObjectCreation(ObjectCreationRegistry* registry)
 {
-	m_replicationManager.ProcessReplicationActions(inStream, this);
-}
-
-void Client::PrintState(std::ostream& out)
-{
-	// Print the state of all objects.
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(*it) << "]: ";
-		(*it)->PrintStateInfo(out);
-	}
+	registry->RegisterCreationFunction<Archer>();
+	registry->RegisterCreationFunction<TownHall>();
 }
 
 void Client::ProcessPacket(Packet* packet)
@@ -91,6 +85,30 @@ void Client::ProcessPacket(Packet* packet)
 
 	switch (packet->data[0])
 	{
+	case ID_CONNECTION_REQUEST_ACCEPTED:
+	{
+		printf("Connected request accepted.\n");
+
+		m_serverAddress = packet->systemAddress;
+
+		// Prompt for the IP address to connect to.
+		char str[512];
+		printf("\nEnter the name of a town hall to spawn: ");
+		gets_s(str, sizeof(str));
+		if (str[0] == 0)
+		{
+			strcpy_s(str, "Thunder Bluff");
+		}
+
+		printf("Sending a Spawn-Object RPC packet with the given object:\n\n");
+		TownHall newTownHall(str, TownHallType::HUMANS, Vector2i(34, 60), 100);
+		newTownHall.PrintStateInfo(std::cout);
+		printf("\n");
+
+		SpawnObjectRPC(&newTownHall);
+
+		break;
+	}
 	case ID_DISCONNECTION_NOTIFICATION:
 	{
 		printf("We have been disconnected.\n");
@@ -103,12 +121,53 @@ void Client::ProcessPacket(Packet* packet)
 	}
 	case PacketType::REPLICATION_DATA:
 	{
+		printf("Received replication packet from server.\n");
 		m_replicationManager.ProcessReplicationActions(inStream, this);
-		std::cout << "Received replication packet from server:" << std::endl << std::endl;
-		PrintState(std::cout);
 		break;
 	}
 	};
+}
+
+void Client::OutputStateToFile()
+{
+	const std::string fileName = "state.txt";
+
+	printf("Outputting state to the file '%s'.\n", fileName.c_str());
+	//PrintState(std::cout);
+
+	std::ofstream file(fileName);
+	if (file.is_open())
+	{
+		PrintState(file);
+
+		file.close();
+	}
+}
+
+void Client::PrintState(std::ostream& out)
+{
+	// Print the state of all objects.
+	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
+	{
+		out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(*it) << "]: ";
+		(*it)->PrintStateInfo(out);
+	}
+}
+
+void Client::SpawnObjectRPC(GameObject* obj)
+{
+	BitStream outStream;
+	outStream.Write<MessageID>(PacketType::REPLICATION_DATA);
+
+	outStream.Write<uint8_t>(ReplicationAction::RPC);
+	outStream.Write<uint32_t>('SPWN');
+	outStream.Write(obj->GetClassId());
+	obj->Serialize(outStream, *m_replicationManager.GetLinkingContext());
+
+	outStream.Write<uint8_t>(ReplicationAction::INVALID);
+
+	m_peerInterface->Send(&outStream, HIGH_PRIORITY,
+		RELIABLE_ORDERED, 0, m_serverAddress, false);
 }
 
 void Client::OnObjectCreation(GameObject* obj)
@@ -117,27 +176,3 @@ void Client::OnObjectCreation(GameObject* obj)
 }
 
 
-
-void Client::RegisterRPCs(RPCManager* rpcManager)
-{
-	//rpcManager->RegisterUnwrapFunction('PSND', &(this->UnwrapPlaySound));
-
-	//BitStream bsOut;
-	//bsOut.Write<uint32_t>('PSND');
-	//rpcManager->ProcessRPC(bsOut);
-}
-
-void Client::RegisterObjectCreation(ObjectCreationRegistry* registry)
-{
-	registry->RegisterCreationFunction<Archer>();
-	registry->RegisterCreationFunction<TownHall>();
-}
-
-void Client::SpawnObjectRPC(GameObject* obj)
-{
-	BitStream outStream;
-	outStream.Write<MessageID>(PacketType::REPLICATION_DATA);
-	outStream.Write<uint32_t('SPWN');
-	outStream.Write(obj->GetClassId()
-	outStream.Write<uint8_t>(ReplicationAction::INVALID);
-}

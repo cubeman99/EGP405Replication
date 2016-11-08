@@ -1,7 +1,6 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-
 #include <iostream>
 #include <RakNet/BitStream.h>
 #include <RakNet/RakPeerInterface.h>
@@ -9,8 +8,10 @@
 #include "RPCManager.h"
 #include "ReplicationManager.h"
 
+
 #define SERVER_PORT 60000
 #define MAX_CLIENTS 10
+
 
 class Server : public ObjectCreationListener
 {
@@ -21,21 +22,20 @@ public:
 		return &instance;
 	}
 
-	void SerializeState(RakNet::BitStream& outStream);
-	void PrintState(std::ostream& out);
-
 	void RunServer();
 
 	void RegisterRPCs(RPCManager* rpcManager);
+	void RegisterObjectCreation(ObjectCreationRegistry* registry);
 
 	void ProcessPacket(RakNet::Packet* packet);
-
-	inline ReplicationManager* GetReplicationManager() { return &m_replicationManager; }
+	void SerializeState(RakNet::BitStream& outStream);
+	void PrintState(std::ostream& out);
+	void OnObjectCreation(GameObject* obj) override;
 
 	static void UnwrapSpawnUnit(RakNet::BitStream& inStream);
 
-	void OnObjectCreation(GameObject* obj) override;
-
+	inline ReplicationManager* GetReplicationManager() { return &m_replicationManager; }
+	
 private:
 	Server();
 	~Server();

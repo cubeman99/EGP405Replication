@@ -9,10 +9,10 @@ using namespace RakNet;
 Server::Server()
 {
 	RegisterRPCs(m_replicationManager.GetRPCManager());
-	//RegisterObjectCreation(m_replicationManager.GetObjectCreationRegistry());
+	RegisterObjectCreation(m_replicationManager.GetObjectCreationRegistry());
 
 	// Town Halls:
-	//  - 1 Elf
+	// - 1 Elf
 	// - 1 Human
 	// - 1 Undead
 	// - 2 Orc
@@ -35,12 +35,10 @@ Server::Server()
 	m_gameObjects.push_back(new Archer("Tyrande Whisperwind", hallElves, Vector2i(4, 5), 100, Action::IDLE));
 	m_gameObjects.push_back(new Archer("Malfurian Stormrage", hallElves, Vector2i(20, 14), 100, Action::WALKING));
 	m_gameObjects.push_back(new Archer("Varian Wrynn", hallHumans, Vector2i(87, 70), 100, Action::IDLE));
-	m_gameObjects.push_back(new Archer("Sylvanas Windrunner", hallUndead, Vector2i(90, 22), 100, Action::SHOOTING));
+	m_gameObjects.push_back(new Archer("Sylvanas Windrunner", hallUndead, Vector2i(90, 22), 96, Action::SHOOTING));
 	m_gameObjects.push_back(new Archer("Thrall", hallOrcs1, Vector2i(30, 44), 100, Action::WALKING));
 	m_gameObjects.push_back(new Archer("Vol'jin", hallOrcs1, Vector2i(29, 40), 100, Action::IDLE));
-	m_gameObjects.push_back(new Archer("Orgnil Soulscar", hallOrcs2, Vector2i(31, 51), 100, Action::SHOOTING));
-
-	//PrintState(std::cout);
+	m_gameObjects.push_back(new Archer("Orgnil Soulscar", hallOrcs2, Vector2i(31, 51), 80, Action::SHOOTING));
 }
 
 Server::~Server()
@@ -80,7 +78,63 @@ void Server::RunServer()
 			ProcessPacket(packet);
 		}
 	}
+}
 
+void Server::RegisterRPCs(RPCManager* rpcManager)
+{
+	rpcManager->RegisterUnwrapFunction('SPWN', Server::UnwrapSpawnUnit);
+}
+
+void Server::RegisterObjectCreation(ObjectCreationRegistry* registry)
+{
+	registry->RegisterCreationFunction<Archer>();
+	registry->RegisterCreationFunction<TownHall>();
+}
+
+void Server::ProcessPacket(Packet* packet)
+{
+	BitStream inStream(packet->data, packet->length, false);
+	inStream.IgnoreBytes(sizeof(MessageID));
+
+	switch (packet->data[0])
+	{
+	case ID_REMOTE_NEW_INCOMING_CONNECTION: // A player has connected.
+	case ID_NEW_INCOMING_CONNECTION:
+	{
+		printf("A new client has connected.\n");
+
+		std::cout << "Sending world state to the new client..." << std::endl;
+		BitStream outStream;
+		outStream.Write((MessageID)PacketType::REPLICATION_DATA);
+		SerializeState(outStream);
+		m_peerInterface->Send(&outStream, HIGH_PRIORITY,
+			RELIABLE_ORDERED, 0, packet->systemAddress, false);
+
+		break;
+	}
+	case ID_REMOTE_DISCONNECTION_NOTIFICATION:
+	case ID_REMOTE_CONNECTION_LOST:
+	case ID_DISCONNECTION_NOTIFICATION:
+	case ID_CONNECTION_LOST:
+	{
+		printf("A client has disconnected.\n");
+		break;
+	}
+	case PacketType::REPLICATION_DATA:
+	{
+		std::cout << "Received replication packet from client." << std::endl;
+		m_replicationManager.ProcessReplicationActions(inStream, this);
+
+		std::cout << "Broadcasting world state to clients..." << std::endl;
+		BitStream outStream;
+		outStream.Write((MessageID)PacketType::REPLICATION_DATA);
+		SerializeState(outStream);
+		m_peerInterface->Send(&outStream, HIGH_PRIORITY,
+			RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+
+		break;
+	}
+	};
 }
 
 void Server::SerializeState(BitStream& outStream)
@@ -104,68 +158,24 @@ void Server::PrintState(std::ostream& out)
 	}
 }
 
-void Server::ProcessPacket(Packet* packet)
+void Server::OnObjectCreation(GameObject* obj)
 {
-	BitStream inStream(packet->data, packet->length, false);
-	inStream.IgnoreBytes(sizeof(MessageID));
-
-	switch (packet->data[0])
-	{
-	case ID_REMOTE_NEW_INCOMING_CONNECTION: // A player has connected.
-	case ID_NEW_INCOMING_CONNECTION:
-	{
-		printf("A new client has connected\n");
-
-		BitStream outStream;
-		outStream.Write((MessageID)PacketType::REPLICATION_DATA);
-		SerializeState(outStream);
-		m_peerInterface->Send(&outStream, HIGH_PRIORITY,
-			RELIABLE_ORDERED, 0, packet->systemAddress, false);
-
-		break;
-	}
-	case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-	case ID_REMOTE_CONNECTION_LOST:
-	case ID_DISCONNECTION_NOTIFICATION:
-	case ID_CONNECTION_LOST:
-	{
-		printf("A client has disconnected\n");
-		break;
-	}
-	};
+	m_gameObjects.push_back(obj);
 }
-
 
 void Server::UnwrapSpawnUnit(RakNet::BitStream& inStream)
 {
 	Server* server = Server::GetInstance();
 
-	m_replicationManager.ProcessStateReplicationAction(inStream, server);
-
 	// Read the class ID.
+	uint32_t classId;
 	inStream.Read(classId);
 
 	// Create the object.
-	GameObject* obj = m_objectCreationRegistry.CreateGameObject(classId);
-	server->m_replicationManager->GetLinkingContext()->AddGameObject(obj, networkId);
+	GameObject* obj = server->m_replicationManager.GetObjectCreationRegistry()->CreateGameObject(classId);
+	server->m_replicationManager.GetLinkingContext()->GetNetworkId(obj);
 	server->m_gameObjects.push_back(obj);
 
 	// Read the object-specific data.
-	obj->Deserialize(inStream, m_linkingContext);
-}
-
-void Server::RegisterRPCs(RPCManager* rpcManager)
-{
-	rpcManager->RegisterUnwrapFunction('SPWN', Server::UnwrapSpawnUnit);
-
-	//BitStream bsOut;
-	//bsOut.Write<uint32_t>('PSND');
-	//rpcManager->ProcessRPC(bsOut);
-}
-
-
-
-void Server::OnObjectCreation(GameObject* obj)
-{
-	m_gameObjects.push_back(obj);
+	obj->Deserialize(inStream, *server->m_replicationManager.GetLinkingContext());
 }

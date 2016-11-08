@@ -17,22 +17,18 @@ public:
 
 	void RunClient();
 
-	void SerializeState(RakNet::BitStream& outStream);
-	void DeserializeState(RakNet::BitStream& inStream);
-	void PrintState(std::ostream& out);
-
-	void RegisterRPCs(RPCManager* rpcManager);
 	void RegisterObjectCreation(ObjectCreationRegistry* registry);
 
-	void SpawnObjectRPC(GameObject* obj);
-
 	void ProcessPacket(RakNet::Packet* packet);
-
+	void OutputStateToFile();
+	void PrintState(std::ostream& out);
+	void SpawnObjectRPC(GameObject* obj);
 	void OnObjectCreation(GameObject* obj) override;
 
 	inline ReplicationManager* GetReplicationManager() { return &m_replicationManager; }
 
 private:
+	RakNet::SystemAddress m_serverAddress;
 	ReplicationManager m_replicationManager;
 	std::vector<GameObject*> m_gameObjects;
 	RakNet::RakPeerInterface* m_peerInterface;

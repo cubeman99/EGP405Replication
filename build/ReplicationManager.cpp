@@ -25,6 +25,8 @@ void ReplicationManager::ProcessReplicationActions(RakNet::BitStream& inStream, 
 {
 	uint8_t replicationAction;
 
+	int index = 1;
+
 	while (true)
 	{
 		inStream.Read(replicationAction);
@@ -45,6 +47,8 @@ void ReplicationManager::ProcessReplicationActions(RakNet::BitStream& inStream, 
 		{
 			// Unknown replication action.
 		}
+
+		index++;
 	}
 }
 
