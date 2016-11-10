@@ -149,8 +149,30 @@ void Client::PrintState(std::ostream& out)
 	// Print the state of all objects.
 	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
 	{
-		out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(*it) << "]: ";
-		(*it)->PrintStateInfo(out);
+		GameObject* townHall = *it;
+
+		if (townHall->GetClassId() == TownHall::kClassId)
+		{
+			out << "================================================================" << std::endl;
+			out << std::endl;
+			out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(townHall) << "]: ";
+			townHall->PrintStateInfo(out);
+			out << std::endl;
+			out << "-------------------------------" << std::endl;
+			out << std::endl;
+			
+			for (auto it2 = m_gameObjects.begin(); it2 != m_gameObjects.end(); it2++)
+			{
+				GameObject* archer = *it2;
+
+				if (archer->GetClassId() == Archer::kClassId && dynamic_cast<Archer*>(archer)->GetTownHall() == townHall)
+				{
+					out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(archer) << "]: ";
+					archer->PrintStateInfo(out);
+					out << std::endl;
+				}
+			}
+		}
 	}
 }
 

@@ -148,16 +148,6 @@ void Server::SerializeState(BitStream& outStream)
 	m_replicationManager.SerializeEndOfReplicationActions(outStream);
 }
 
-void Server::PrintState(std::ostream& out)
-{
-	// Print the state of all objects.
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		out << "[Net ID " << m_replicationManager.GetLinkingContext()->GetNetworkId(*it) << "]: ";
-		(*it)->PrintStateInfo(out);
-	}
-}
-
 void Server::OnObjectCreation(GameObject* obj)
 {
 	m_gameObjects.push_back(obj);

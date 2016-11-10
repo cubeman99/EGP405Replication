@@ -29,7 +29,6 @@ public:
 
 	void ProcessPacket(RakNet::Packet* packet);
 	void SerializeState(RakNet::BitStream& outStream);
-	void PrintState(std::ostream& out);
 	void OnObjectCreation(GameObject* obj) override;
 
 	static void UnwrapSpawnUnit(RakNet::BitStream& inStream);
